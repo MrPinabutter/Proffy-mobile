@@ -3,10 +3,11 @@ import React, { useState, useEffect } from 'react';
 import { Text, View, ScrollView } from 'react-native';
 import { TextInput, BorderlessButton, RectButton } from 'react-native-gesture-handler';
 import { Feather } from '@expo/vector-icons';
+import TeacherItem, { Teacher } from '../../components/TeacherItem';
+import { useFocusEffect } from '@react-navigation/native'
 import AsyncStorage from '@react-native-community/async-storage'
 
 import PageHeader from '../../components/PageHeader';
-import TeacherItem, { Teacher } from '../../components/TeacherItem';
 
 import api from '../../services/api';
 
@@ -23,9 +24,16 @@ function TeacherList() {
 
   function handleToggleFilltersVisible() {
     setIsFilltersVisible(!isFilltersVisible);
+    console.log(favorites);
   };
 
+  useFocusEffect(() => {
+    loadFavorites();
+  })
+
   async function handleFilltersSubmit() {
+    loadFavorites();
+
     const response = await api.get('classes', {
       params:{
         subject,
@@ -37,16 +45,16 @@ function TeacherList() {
     setTeachers(response.data)
   };
 
-  useEffect(() => {
-    AsyncStorage.getItem('favorites').then(res => {
+  async function loadFavorites() {
+    await AsyncStorage.getItem('favorites').then(res => {
       if(res){
         const favoritedTeachers = JSON.parse(res);
-        const favoritedTeachersIds = favoritedTeachers.map((teacher: Teacher) =>  teacher.id)
+        const favoritedTeachersIds = favoritedTeachers.map((teacher: Teacher) => teacher.id)
 
         setFavorites(favoritedTeachersIds);
       }
     });
-  }, []);
+  };
 
   return (
     <View style={styles.container}>
